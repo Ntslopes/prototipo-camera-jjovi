@@ -1,0 +1,314 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --ios-yellow: #ffcc00;
+    --dark-bg: #111;
+}
+
+body {
+    background: radial-gradient(circle at 20% 30%, #2c2c2c, #0a0a0a);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: -apple-system, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+/* iPhone moldura */
+.iphone {
+    width: 360px;
+    height: 740px;
+    background-color: #000;
+    border-radius: 48px;
+    border: 8px solid #2c2c2c;
+    box-shadow: 0 30px 40px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0;
+    z-index: 200;
+    pointer-events: none;
+    transition: opacity 0.08s ease;
+}
+
+/* Toast flutuante */
+.toast-msg {
+    position: absolute;
+    bottom: 140px;
+    left: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    color: #ffcc00;
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 150;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    border: 0.5px solid rgba(255,204,0,0.4);
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+.camera-view {
+    flex-grow: 1;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.top-nav {
+    position: absolute;
+    top: 48px;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 15;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    padding: 8px 0;
+    letter-spacing: 0.3px;
+}
+
+.top-nav span {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+
+.active-yellow {
+    color: var(--ios-yellow);
+    background: rgba(255,204,0,0.15);
+    font-weight: 600;
+}
+
+.mode-selector {
+    background: rgba(0,0,0,0.9);
+    padding: 12px 0;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    color: #ccc;
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+    border-top: 0.5px solid #2c2c2c;
+    border-bottom: 0.5px solid #2c2c2c;
+}
+
+.mode {
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.6;
+    padding: 4px 0;
+}
+
+.mode.selected {
+    color: var(--ios-yellow);
+    opacity: 1;
+    transform: scale(1.02);
+    text-shadow: 0 0 2px rgba(255,204,0,0.5);
+}
+
+.shutter-area {
+    background: #000;
+    height: 110px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 20px 20px 20px;
+}
+
+.shutter-btn {
+    width: 72px;
+    height: 72px;
+    background: white;
+    border-radius: 50%;
+    border: 3px solid #1a1a1a;
+    outline: 3px solid #f5f5f5;
+    cursor: pointer;
+    transition: transform 0.08s linear;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.shutter-btn:active {
+    transform: scale(0.88);
+}
+
+.flip-btn {
+    width: 48px;
+    height: 48px;
+    background: #222;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+    color: white;
+    backdrop-filter: blur(4px);
+    transition: 0.1s;
+}
+
+.flip-btn:active {
+    transform: scale(0.92);
+    background: #3a3a3a;
+}
+
+.gallery-preview {
+    width: 54px;
+    height: 54px;
+    background: #1e1e1e;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #444;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+/* GALERIA OVERLAY + TEMPO DE EXPIRAÇÃO */
+#galleryOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.96);
+    backdrop-filter: blur(16px);
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#currentPhoto {
+    width: 100%;
+    flex: 2;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: 20px 0;
+}
+
+.expiry-badge {
+    background: #1c1c1e;
+    padding: 12px 20px;
+    margin: 8px 20px;
+    border-radius: 40px;
+    text-align: center;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffcc00;
+    box-shadow: 0 0 12px rgba(255,204,0,0.2);
+    border: 0.5px solid rgba(255,204,0,0.5);
+}
+
+.gallery-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: rgba(0,0,0,0.7);
+    margin-top: 8px;
+}
+
+.nav-btn {
+    background: #2c2c2e;
+    border: none;
+    color: white;
+    font-size: 22px;
+    padding: 8px 20px;
+    border-radius: 32px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.close-gallery {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(60,60,65,0.8);
+    color: white;
+    border: none;
+    border-radius: 40px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 310;
+}
+
+.delete-photo-btn {
+    background: rgba(255, 50, 50, 0.2);
+    border: 1px solid #ff5e5e;
+    color: #ff9e9e;
+    font-weight: bold;
+    padding: 10px 24px;
+    border-radius: 30px;
+    margin: 12px auto 20px auto;
+    width: fit-content;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+canvas {
+    display: none;
+}
+
+#tempOptions {
+    background: #0f0f0f;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    border-bottom: 1px solid #333;
+}
+
+select {
+    background: #222;
+    color: #ffcc00;
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin-left: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.photo-counter {
+    font-weight: 600;
+    background: #000000aa;
+    padding: 5px 12px;
+    border-radius: 50px;
+}
