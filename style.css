@@ -1,38 +1,62 @@
+/* =========================================
+   ESTILO GLOBAL E RESET
+   ========================================= */
 * {
     box-sizing: border-box;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
 }
 
 :root {
-    --ios-yellow: #ffcc00;
-    --dark-bg: #111;
+    --vivo-accent: #e91e63;
+    --vivo-blue: #2196F3;
+    --aura-glow: rgba(255, 255, 255, 0.8);
+    --glass-dark: rgba(0, 0, 0, 0.7);
+    --text-gray: #aaaaaa;
 }
 
 body {
-    background: radial-gradient(circle at 20% 30%, #2c2c2c, #0a0a0a);
+    background: #0f0f0f;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
-    font-family: -apple-system, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
 }
 
-/* iPhone moldura */
-.iphone {
+/* =========================================
+   MOLDURA DO SMARTPHONE (VIVO V40 STYLE)
+   ========================================= */
+.smartphone-vivo {
     width: 360px;
-    height: 740px;
+    height: 760px;
     background-color: #000;
-    border-radius: 48px;
-    border: 8px solid #2c2c2c;
-    box-shadow: 0 30px 40px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(255,255,255,0.05);
+    border-radius: 42px;
+    border: 4px solid #1f1f1f;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.9);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
+/* Câmera Frontal (Punch-hole central) */
+.camera-punch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    background: #080808;
+    border-radius: 50%;
+    z-index: 100;
+    box-shadow: inset 0 0 2px rgba(255,255,255,0.3);
+}
+
+/* Flash de tela */
 #flash {
     position: absolute;
     top: 0;
@@ -46,31 +70,12 @@ body {
     transition: opacity 0.08s ease;
 }
 
-/* Toast flutuante */
-.toast-msg {
-    position: absolute;
-    bottom: 140px;
-    left: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(10px);
-    color: #ffcc00;
-    text-align: center;
-    padding: 10px 16px;
-    border-radius: 40px;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 150;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    border: 0.5px solid rgba(255,204,0,0.4);
-    font-family: monospace;
-    letter-spacing: 0.5px;
-}
-
+/* =========================================
+   INTERFACE DA CÂMERA
+   ========================================= */
 .camera-view {
     flex-grow: 1;
-    background: #000;
+    background: #111;
     position: relative;
     overflow: hidden;
 }
@@ -81,234 +86,306 @@ video {
     object-fit: cover;
 }
 
+/* Navegação Superior */
 .top-nav {
     position: absolute;
-    top: 48px;
+    top: 45px;
     width: 100%;
     display: flex;
     justify-content: space-evenly;
-    color: rgba(255,255,255,0.8);
-    font-size: 12px;
-    font-weight: 500;
+    align-items: center;
     z-index: 15;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px);
-    padding: 8px 0;
-    letter-spacing: 0.3px;
+    padding: 10px 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
 }
 
-.top-nav span {
+.nav-item {
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
     padding: 6px 12px;
     border-radius: 20px;
-    transition: 0.2s;
+    background: rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
 }
 
-.active-yellow {
-    color: var(--ios-yellow);
-    background: rgba(255,204,0,0.15);
-    font-weight: 600;
+.nav-item:active {
+    transform: scale(0.95);
 }
 
+/* Estilo para botão selecionado com BORDA AZUL */
+.nav-item.active {
+    color: #fff;
+    background: rgba(33, 150, 243, 0.2);
+    border: 2px solid var(--vivo-blue);
+    box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
+}
+
+.zeiss-brand {
+    background: #0051ba;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.zeiss-brand.active {
+    background: #0073e6;
+    border: 2px solid #4fc3f7;
+    box-shadow: 0 0 8px rgba(79, 195, 247, 0.5);
+}
+
+/* Opções de Tempo (Seletor) */
+#tempOptions {
+    background: #080808;
+    color: #fff;
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    border-top: 0.5px solid #222;
+}
+
+select {
+    background: #222;
+    color: var(--vivo-accent);
+    border: none;
+    border-radius: 15px;
+    padding: 4px 10px;
+    margin-left: 5px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Seletor de Modos */
 .mode-selector {
-    background: rgba(0,0,0,0.9);
-    padding: 12px 0;
+    background: #000;
+    padding: 15px 0;
+    border-top: 0.5px solid #1a1a1a;
+}
+
+.mode-track {
     display: flex;
     justify-content: center;
     gap: 22px;
-    color: #ccc;
-    font-size: 11px;
-    font-weight: 600;
-    backdrop-filter: blur(5px);
-    border-top: 0.5px solid #2c2c2c;
-    border-bottom: 0.5px solid #2c2c2c;
 }
 
 .mode {
+    color: var(--text-gray);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0.6;
-    padding: 4px 0;
+    transition: 0.2s;
+    padding: 5px 0;
+}
+
+.mode:active {
+    transform: scale(0.95);
 }
 
 .mode.selected {
-    color: var(--ios-yellow);
-    opacity: 1;
-    transform: scale(1.02);
-    text-shadow: 0 0 2px rgba(255,204,0,0.5);
+    color: #fff;
+    position: relative;
 }
 
+.mode.selected::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--vivo-accent);
+    border-radius: 50%;
+}
+
+/* =========================================
+   CONTROLES INFERIORES (SHUTTER)
+   ========================================= */
 .shutter-area {
     background: #000;
-    height: 110px;
+    height: 125px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 8px 20px 20px 20px;
+    padding: 0 25px 25px 25px;
+}
+
+.shutter-btn-container {
+    width: 82px;
+    height: 82px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,0.15);
 }
 
 .shutter-btn {
-    width: 72px;
-    height: 72px;
-    background: white;
+    width: 66px;
+    height: 66px;
+    background: #fff;
     border-radius: 50%;
-    border: 3px solid #1a1a1a;
-    outline: 3px solid #f5f5f5;
     cursor: pointer;
-    transition: transform 0.08s linear;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 0 15px var(--aura-glow), 0 0 30px rgba(255,255,255,0.2);
+    transition: transform 0.1s cubic-bezier(0.1, 0.7, 1.0, 0.1);
 }
 
 .shutter-btn:active {
     transform: scale(0.88);
+    filter: brightness(0.9);
+}
+
+.gallery-preview {
+    width: 52px;
+    height: 52px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    border: 1.5px solid #333;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
 }
 
 .flip-btn {
-    width: 48px;
-    height: 48px;
-    background: #222;
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,0.1);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-size: 24px;
-    color: white;
-    backdrop-filter: blur(4px);
-    transition: 0.1s;
 }
 
 .flip-btn:active {
     transform: scale(0.92);
-    background: #3a3a3a;
+    background: rgba(255,255,255,0.2);
 }
 
-.gallery-preview {
-    width: 54px;
-    height: 54px;
-    background: #1e1e1e;
-    border-radius: 12px;
-    background-size: cover;
-    background-position: center;
-    border: 1px solid #444;
-    cursor: pointer;
-    transition: 0.1s;
-}
-
-/* GALERIA OVERLAY + TEMPO DE EXPIRAÇÃO */
+/* =========================================
+   GALERIA E OVERLAYS
+   ========================================= */
 #galleryOverlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.96);
-    backdrop-filter: blur(16px);
+    background: #000;
     z-index: 300;
     display: none;
     flex-direction: column;
-    justify-content: center;
 }
 
 #currentPhoto {
     width: 100%;
-    flex: 2;
+    flex: 1;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    margin: 20px 0;
 }
 
 .expiry-badge {
-    background: #1c1c1e;
-    padding: 12px 20px;
-    margin: 8px 20px;
-    border-radius: 40px;
+    background: var(--glass-dark);
+    color: var(--vivo-accent);
+    padding: 12px;
+    margin: 10px 30px;
+    border-radius: 20px;
     text-align: center;
-    font-family: monospace;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 1px;
-    color: #ffcc00;
-    box-shadow: 0 0 12px rgba(255,204,0,0.2);
-    border: 0.5px solid rgba(255,204,0,0.5);
+    border: 1px solid rgba(233, 30, 99, 0.3);
 }
 
 .gallery-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
-    background: rgba(0,0,0,0.7);
-    margin-top: 8px;
+    padding: 20px;
+    background: #080808;
 }
 
 .nav-btn {
-    background: #2c2c2e;
+    background: #222;
     border: none;
-    color: white;
-    font-size: 22px;
-    padding: 8px 20px;
-    border-radius: 32px;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
     cursor: pointer;
-    font-weight: bold;
+    font-size: 16px;
+    transition: 0.1s;
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+    background: #333;
 }
 
 .close-gallery {
     position: absolute;
-    top: 20px;
+    top: 40px;
     right: 20px;
-    background: rgba(60,60,65,0.8);
+    background: rgba(0,0,0,0.6);
     color: white;
     border: none;
-    border-radius: 40px;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     font-size: 20px;
     cursor: pointer;
-    backdrop-filter: blur(8px);
     z-index: 310;
-}
-
-.delete-photo-btn {
-    background: rgba(255, 50, 50, 0.2);
-    border: 1px solid #ff5e5e;
-    color: #ff9e9e;
-    font-weight: bold;
-    padding: 10px 24px;
-    border-radius: 30px;
-    margin: 12px auto 20px auto;
-    width: fit-content;
-    cursor: pointer;
     transition: 0.1s;
 }
 
-canvas {
-    display: none;
+.close-gallery:active {
+    transform: scale(0.92);
+    background: rgba(0,0,0,0.8);
 }
 
-#tempOptions {
-    background: #0f0f0f;
-    color: white;
+.delete-photo-btn {
+    background: rgba(233, 30, 99, 0.2);
+    color: var(--vivo-accent);
     text-align: center;
-    padding: 8px;
-    font-size: 12px;
-    border-bottom: 1px solid #333;
-}
-
-select {
-    background: #222;
-    color: #ffcc00;
-    border-radius: 20px;
-    padding: 5px 12px;
-    margin-left: 8px;
+    padding: 14px;
+    margin: 10px 30px 30px;
+    border-radius: 30px;
     font-weight: bold;
     cursor: pointer;
+    border: 1px solid rgba(233, 30, 99, 0.4);
+    transition: 0.1s;
 }
 
+.delete-photo-btn:active {
+    transform: scale(0.97);
+    background: rgba(233, 30, 99, 0.4);
+}
+
+.toast-msg {
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+}
+
+canvas { display: none; }
+
 .photo-counter {
-    font-weight: 600;
-    background: #000000aa;
-    padding: 5px 12px;
-    border-radius: 50px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
 }

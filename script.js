@@ -1,3 +1,5 @@
+// ==================== APP DE CÂMERA TEMPORÁRIA VIVO V40 ====================
+
 // ---------- ELEMENTOS ----------
 const video = document.getElementById('video');
 const flash = document.getElementById('flash');
@@ -22,6 +24,7 @@ let currentIndex = 0;
 let timerInterval = null;   // intervalo do contador regressivo
 let globalCleanInterval = null;
 let useFront = false;       // controle da câmera frontal/traseira
+let currentSetting = 'On';  // HDR, ZEISS, Auto, On
 
 // ---------- FUNÇÕES DE UTILIDADE ----------
 
@@ -38,7 +41,6 @@ function showToast(message, duration = 2200) {
 function formatExpiryTime(msLeft) {
     if (msLeft <= 0) return "EXPIRADA";
     
-    // Para valores muito pequenos, mostrar segundos mesmo se for < 1 minuto
     if (msLeft < 60000) {
         const seconds = Math.floor(msLeft / 1000);
         return `${seconds} segundo${seconds !== 1 ? 's' : ''}`;
@@ -93,7 +95,6 @@ function cleanExpiredPhotos() {
     if (beforeCount !== photos.length) {
         localStorage.setItem('myPhotos', JSON.stringify(photos));
         updateThumbnail();
-        // Se a galeria estiver aberta e a foto atual foi removida, recarregar
         if (galleryOverlay.style.display === 'flex') {
             if (photos.length === 0) {
                 closeGallery();
@@ -111,7 +112,7 @@ function cleanExpiredPhotos() {
 function updateThumbnail() {
     if (photos.length === 0) {
         galleryPreview.style.backgroundImage = 'none';
-        galleryPreview.style.backgroundColor = '#1e1e1e';
+        galleryPreview.style.backgroundColor = 'rgba(255,255,255,0.1)';
     } else {
         const lastPhoto = photos[photos.length - 1];
         if (lastPhoto && lastPhoto.data) {
@@ -168,7 +169,7 @@ function startExpiryTimerForCurrent() {
     }, 1000);
 }
 
-// Lida com expiração da foto atual: remove da lista, atualiza storage e UI
+// Lida com expiração da foto atual
 function handleExpiredCurrentPhoto() {
     if (photos.length === 0) return;
     const expiredId = currentIndex;
@@ -299,8 +300,52 @@ function flipCamera() {
         .catch(err => alert("Erro ao alternar câmera"));
 }
 
+// Aplicar filtros baseados na configuração selecionada
+function applyFiltersToImage(imageDataUrl, setting) {
+    return new Promise((resolve) => {
+        if (setting === 'On' || setting === 'Auto') {
+            resolve(imageDataUrl);
+            return;
+        }
+        
+        const img = new Image();
+        img.onload = () => {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = img.width;
+            tempCanvas.height = img.height;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            if (setting === 'HDR') {
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, data[i] * 1.15);
+                    data[i+1] = Math.min(255, data[i+1] * 1.15);
+                    data[i+2] = Math.min(255, data[i+2] * 1.15);
+                }
+                ctx.putImageData(imageData, 0, 0);
+                showToast("🎨 Efeito HDR aplicado", 1000);
+            } else if (setting === 'ZEISS') {
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, data[i] * 1.05);
+                    data[i+1] = Math.min(255, data[i+1] * 1.05);
+                    data[i+2] = Math.min(255, data[i+2] * 1.05);
+                }
+                ctx.putImageData(imageData, 0, 0);
+                showToast("🔵 Filtro ZEISS aplicado", 1000);
+            }
+            
+            resolve(tempCanvas.toDataURL('image/jpeg', 0.9));
+        };
+        img.src = imageDataUrl;
+    });
+}
+
 // capturar foto (shutter)
-function takePhoto() {
+async function takePhoto() {
     flash.style.opacity = "1";
     setTimeout(() => flash.style.opacity = "0", 100);
     
@@ -313,16 +358,12 @@ function takePhoto() {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
-    const isMirrored = video.style.transform === "scaleX(-1)";
-    if (isMirrored) {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-    }
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    if (isMirrored) ctx.restore();
     
-    const imageData = canvas.toDataURL('image/jpeg', 0.85);
+    let imageData = canvas.toDataURL('image/jpeg', 0.85);
+    
+    // Aplicar filtro baseado na configuração atual
+    imageData = await applyFiltersToImage(imageData, currentSetting);
     
     const selectedMode = document.querySelector('.mode.selected').getAttribute('data-mode');
     let photoObj = { data: imageData };
@@ -335,7 +376,10 @@ function takePhoto() {
         if (durationMs === 60000) tempoDesc = "1 minuto";
         showToast(`⏱️ Foto TEMPORÁRIA · expira em ${tempoDesc}`, 2800);
     } else {
-        showToast("📸 Foto salva na galeria!", 1000);
+        let modeMsg = "";
+        if (selectedMode === "PORTRAIT") modeMsg = " 📸 Modo Retrato";
+        else if (selectedMode === "NIGHT") modeMsg = " 🌙 Modo Noturno";
+        showToast(`📸 Foto salva${modeMsg}!`, 1000);
     }
     
     photos.push(photoObj);
@@ -358,24 +402,44 @@ function selectMode(el) {
     
     if (modeText === "TEMP") {
         tempOptionsDiv.style.display = "block";
-        shutter.style.backgroundColor = "#ffcc00";
-        shutter.style.outline = "3px solid #ffdd55";
-    } else if (modeText === "VIDEO") {
-        tempOptionsDiv.style.display = "none";
-        shutter.style.backgroundColor = "#ff3b30";
-        shutter.style.outline = "3px solid #ff6b60";
-        showToast("🎥 Modo Vídeo (captura imagem estática)", 1200);
     } else {
         tempOptionsDiv.style.display = "none";
-        shutter.style.backgroundColor = "white";
-        shutter.style.outline = "3px solid white";
+        if (modeText === "VIDEO") {
+            showToast("🎥 Modo Vídeo (captura imagem estática)", 1200);
+        } else if (modeText === "PORTRAIT") {
+            showToast("📸 Modo Retrato ativado", 1000);
+        } else if (modeText === "NIGHT") {
+            showToast("🌙 Modo Noturno ativado", 1000);
+        }
     }
 }
 
-function toggleSetting(el) {
-    const parent = el.parentElement;
-    [...parent.children].forEach(s => s.classList.remove('active-yellow'));
-    el.classList.add('active-yellow');
+function setSetting(settingName) {
+    currentSetting = settingName;
+    
+    // Atualizar UI dos botões
+    document.querySelectorAll('.nav-item').forEach(item => {
+        if (item.getAttribute('data-setting') === settingName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+    
+    // Aplicar filtro de visualização na câmera
+    if (settingName === 'HDR') {
+        video.style.filter = 'contrast(1.1) saturate(1.2)';
+        showToast("🎨 Modo HDR ativado", 1000);
+    } else if (settingName === 'ZEISS') {
+        video.style.filter = 'brightness(1.05) contrast(1.05)';
+        showToast("🔵 Lente ZEISS ativada", 1000);
+    } else if (settingName === 'Auto') {
+        video.style.filter = 'none';
+        showToast("🤖 Modo Automático", 1000);
+    } else {
+        video.style.filter = 'none';
+        showToast("⚡ Modo Padrão", 800);
+    }
 }
 
 // ---------- LIMPEZA PERIÓDICA ----------
@@ -402,7 +466,6 @@ function startGlobalCleanup() {
 
 // ---------- EVENT LISTENERS ----------
 
-// Configurar todos os event listeners
 function setupEventListeners() {
     shutter.addEventListener('click', takePhoto);
     flipBtn.addEventListener('click', flipCamera);
@@ -417,9 +480,13 @@ function setupEventListeners() {
         mode.addEventListener('click', () => selectMode(mode));
     });
     
-    // Configurações do top-nav
-    document.querySelectorAll('.top-nav span').forEach(setting => {
-        setting.addEventListener('click', () => toggleSetting(setting));
+    // Configurações do top-nav (HDR, ZEISS, Auto, On)
+    document.querySelectorAll('.nav-item').forEach(setting => {
+        setting.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const settingName = setting.getAttribute('data-setting');
+            setSetting(settingName);
+        });
     });
 }
 
@@ -430,6 +497,7 @@ function init() {
     startCamera();
     startGlobalCleanup();
     setupEventListeners();
+    setSetting('On'); // Inicializar com On selecionado
     
     window.addEventListener('focus', () => {
         cleanExpiredPhotos();
